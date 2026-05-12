@@ -1,3 +1,30 @@
+"""
+========================================================================
+文件名: layers/moe.py
+所属模块: Layers - Mixture-of-Experts 层
+========================================================================
+
+【这个文件做什么】
+实现 MoE（混合专家）的 forward——这是 Qwen3-MoE、Mixtral 等模型的核心层。
+
+【MoE 是什么】
+传统 FFN 对每个 token 都跑同一个大矩阵；MoE 把这个矩阵切成 N 个"专家"，
+每个 token 通过一个"门控网络"（router）选 top-k 个专家计算。
+好处：参数量大但激活量小——例如 8 个专家、每 token 选 2 个，参数是 8 倍
+但实际计算量只有 2 倍。
+
+【主要步骤】
+1. router 算出每个 token 选哪 top-k 专家、各专家的权重；
+2. 把 token 按所选专家分组；
+3. 对每组 token 分别送到对应专家的 FFN；
+4. 把各专家的输出按权重加权求和回到原 token 位置。
+
+【MoE 后端】
+具体的"按专家分组 + 并行算 FFN"由 moe/fused.py 的 fused MoE kernel 实现，
+本层只是个调度封装。
+========================================================================
+"""
+
 import torch
 from minisgl.core import get_global_ctx
 from minisgl.distributed import DistributedCommunicator, get_tp_info

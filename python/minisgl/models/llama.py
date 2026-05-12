@@ -1,3 +1,17 @@
+"""
+========================================================================
+文件名: models/llama.py
+所属模块: Models - LLaMA 模型实现
+========================================================================
+
+LLaMA 系列模型的具体实现：
+- Embedding → N × DecoderLayer → 最终 RMSNorm → LM Head → logits
+每个 DecoderLayer 内：input_norm → Attention → residual → post_norm → FFN(SwiGLU) → residual
+
+支持的模型：LLaMA 1/2/3 及衍生模型（架构与 Qwen2 几乎相同）。
+========================================================================
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Tuple

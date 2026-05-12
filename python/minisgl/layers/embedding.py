@@ -1,3 +1,32 @@
+"""
+========================================================================
+文件名: layers/embedding.py
+所属模块: Layers - Embedding 层 + LM Head（输出层）
+========================================================================
+
+【这两个组件做什么】
+
+- VocabParallelEmbedding (输入层):
+    token id (整数) → embedding 向量。TP 时词表按 rank 切分，每卡只持有
+    自己负责的那段 token 的 embedding 向量；输入 token id 落不到自己
+    段时返回零向量，最后 all-reduce 求和得到完整结果。
+
+- ParallelLMHead (输出层):
+    最后一层 hidden state → vocab 上的 logits。结构上是个大 Linear，
+    输出维度是 vocab_size。TP 时按列（vocab 维度）切分，每卡输出
+    [batch, vocab_size/TP_size]，再 all-gather 拼成完整 logits。
+
+【tie_word_embeddings】
+某些模型（如 LLaMA 7B、Qwen2 小模型）会让 embedding 和 LM head 共享权重
+（节省参数）。本文件支持这种"绑定"。
+
+【关键技术点】
+- 词表切分：避免单卡存全部 vocab×hidden 的大矩阵；
+- masked embedding lookup：本 rank 段外的 token 输出 0；
+- 最后 all-reduce 把各卡的"段内贡献"加起来。
+========================================================================
+"""
+
 from __future__ import annotations
 
 from typing import Dict

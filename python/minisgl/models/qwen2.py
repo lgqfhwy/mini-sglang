@@ -1,3 +1,17 @@
+"""
+========================================================================
+文件名: models/qwen2.py
+所属模块: Models - Qwen2 模型实现
+========================================================================
+
+Qwen2 系列模型的具体实现（架构和 LLaMA 类似——标准 Transformer + RoPE +
+RMSNorm + SwiGLU + GQA）。文件结构:
+  - Qwen2DecoderLayer:  单层 Transformer block（attention + FFN）
+  - Qwen2Model:         所有 decoder layer 串起来 + 最终 norm
+  - Qwen2ForCausalLM:   Model + LM head + embedding 入口
+========================================================================
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Tuple

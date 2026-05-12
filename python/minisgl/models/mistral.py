@@ -1,3 +1,17 @@
+"""
+========================================================================
+文件名: models/mistral.py
+所属模块: Models - Mistral 模型实现
+========================================================================
+
+Mistral 系列（含 Mistral-7B、Mistral Small 等）的具体实现。
+架构与 LLaMA 类似——Mistral Small 用 sliding-window attention（每个 token
+只看最近 N 个）来支持长上下文，本实现按标准 attention 处理（未启用 SWA）。
+
+也兼容 Mistral3 多模态模型的"纯文本"部分（图像分支不在本框架范围）。
+========================================================================
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Tuple

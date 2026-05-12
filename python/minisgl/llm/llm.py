@@ -1,3 +1,19 @@
+"""
+========================================================================
+文件名: llm/llm.py
+所属模块: LLM - 离线推理便利接口（类似 vllm.LLM）
+========================================================================
+
+【这个文件做什么】
+提供 LLM 类——离线（offline）使用 mini-sglang 的便捷入口。不需要起 HTTP
+server，直接在 Python 代码里：
+    llm = LLM(model_path="...")
+    outputs = llm.generate(["你好", "今天天气"], sampling_params)
+
+适合做 benchmark、批量评测、研究脚本等场景。
+========================================================================
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

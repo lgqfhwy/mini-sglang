@@ -1,3 +1,15 @@
+"""
+========================================================================
+文件名: kernel/moe_impl.py
+所属模块: Kernel - MoE 的 Triton 实现
+========================================================================
+
+fused_moe_kernel_triton / moe_sum_reduce_triton:
+  用 Triton 写的 MoE 计算 kernel。在 NV 卡之外（如 ROCm）或 fallback
+  场景下，fused MoE 不能用 vllm 那套时，走这里。
+========================================================================
+"""
+
 from typing import Any, Dict
 
 import torch

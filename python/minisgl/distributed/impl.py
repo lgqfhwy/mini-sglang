@@ -1,3 +1,27 @@
+"""
+========================================================================
+文件名: distributed/impl.py
+所属模块: Distributed - 通信原语实现（pynccl / nccl 封装）
+========================================================================
+
+【这个文件做什么】
+封装 TP 通信需要的几个核心操作：
+- all_reduce(sum): 多个 GPU 各自有部分结果，求和成完整结果（最常用）
+- all_gather: 收集所有 rank 的张量到一起
+
+【DistributedCommunicator 提供两种实现】
+- PyNcclCommunicator: 基于 pynccl（自定义 NCCL 封装）；
+                      性能更好，因为可以避免不必要的同步、用预分配缓冲。
+- TorchNcclCommunicator: 基于 torch.distributed 的 nccl 后端；
+                          通用、稳定。
+
+【典型调用点】
+- LinearRowParallel.forward 末尾的 all-reduce
+- VocabParallelEmbedding 的 all-reduce
+- MoELayer 的 all-reduce / all-gather
+========================================================================
+"""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

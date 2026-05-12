@@ -1,3 +1,24 @@
+"""
+========================================================================
+文件名: models/weight.py
+所属模块: Models - 从磁盘加载权重文件
+========================================================================
+
+【这个文件做什么】
+load_weight(model_path, device) 从磁盘读取 HuggingFace 格式的权重文件
+（safetensors 或 .bin）并生成器形式 yield (name, tensor) 给上层用。
+
+【为什么用生成器】
+权重文件常达几十 GB。一次性 dict 加载会让峰值显存翻倍——边读边 yield
+让上层 load_state_dict 一个一个赋值后释放，控制峰值。
+
+【支持格式】
+- safetensors（推荐：更安全更快）
+- pytorch_model.bin（旧格式）
+- 多分片模型（如 *.safetensors-00001-of-00010）会按 index 文件自动找全。
+========================================================================
+"""
+
 from __future__ import annotations
 
 import glob

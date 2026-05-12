@@ -1,3 +1,16 @@
+"""
+========================================================================
+文件名: kernel/pynccl.py
+所属模块: Kernel - pynccl Python 包装
+========================================================================
+
+提供 PyNCCLCommunicator 类——直接调 NCCL 库做 all-reduce / all-gather 等
+collective 操作，比 torch.distributed 在某些场景下少一些同步开销。
+
+distributed/impl.py 调用本文件的 PyNCCLCommunicator 作为后端。
+========================================================================
+"""
+
 from __future__ import annotations
 
 import functools

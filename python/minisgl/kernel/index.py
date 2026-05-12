@@ -1,3 +1,14 @@
+"""
+========================================================================
+文件名: kernel/index.py
+所属模块: Kernel - 高效 fancy indexing CUDA kernel
+========================================================================
+
+indexing(source, indices, ...) 等价于 source[indices]，但用自定义 CUDA
+kernel 实现以避免 PyTorch 通用 gather 的额外开销。
+========================================================================
+"""
+
 from __future__ import annotations
 
 import functools

@@ -1,3 +1,18 @@
+"""
+========================================================================
+文件名: kernel/store.py
+所属模块: Kernel - 把 K/V 写入 KV pool 的指定 slot（CUDA kernel 封装）
+========================================================================
+
+store_cache(k_cache, v_cache, indices, k, v):
+  把本步算出的 [num_tokens, num_kv_heads, head_dim] 形状的 k 和 v 张量，
+  按 indices 给的 slot 编号写到 k_cache / v_cache 的对应位置。
+
+用 CUDA kernel 实现（csrc/jit/store.cu）而不是 PyTorch 索引——少一次显存
+拷贝、对向量化 store 友好，性能比 k_cache[indices] = k 提升明显。
+========================================================================
+"""
+
 from __future__ import annotations
 
 import functools

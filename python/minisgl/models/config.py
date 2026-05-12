@@ -1,3 +1,27 @@
+"""
+========================================================================
+文件名: models/config.py
+所属模块: Models - 把 HuggingFace config 转成 mini-sglang 自己的配置
+========================================================================
+
+【这个文件做什么】
+HuggingFace 的 config.json 字段五花八门、命名不统一（不同模型有不同字段名）。
+本文件定义 ModelConfig 把这些字段"翻译"成 mini-sglang 内部的统一名字，
+让其他模块能用同一套字段名（hidden_size / num_layers / num_kv_heads / ...）
+访问模型架构信息。
+
+【两个核心类】
+- RotaryConfig: RoPE 相关参数（head_dim、rotary_dim、max_position、scaling 等）
+- ModelConfig:  其它所有模型架构参数（hidden_size、num_layers、num_attention_heads、
+                num_kv_heads、vocab_size、tie_word_embeddings 等）
+
+【from_hf 工厂方法】
+从 HuggingFace 的 PretrainedConfig 实例转出 ModelConfig——读各种可能的字段名
+（num_key_value_heads 也叫 num_kv_heads 也叫 num_heads_kv 等），用 getattr
+处理。
+========================================================================
+"""
+
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict

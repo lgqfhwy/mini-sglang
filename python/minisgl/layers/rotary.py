@@ -1,3 +1,32 @@
+"""
+========================================================================
+文件名: layers/rotary.py
+所属模块: Layers - RoPE 位置编码（Rotary Position Embedding）
+========================================================================
+
+【这个文件做什么】
+实现 RoPE——一种"旋转位置编码"，被 LLaMA / Qwen / Mistral 等几乎所有
+现代 LLM 使用。它直接修改 Q 和 K 张量，让"位置 i 的 q"和"位置 j 的 k"
+的点积自然反映 (i - j) 的相对距离。
+
+【为什么用 RoPE 而不是 absolute positional embedding】
+- 外推性更好：训练时见过 4096 长度，推理时能扩展到 8192+
+- 不需要单独的 position embedding 表（参数省）
+- 旋转操作和 attention 兼容性好
+
+【实现】
+通过 flashinfer 的 apply_rope_with_cos_sin_cache 一次性把 q 和 k 一起旋转。
+本文件主要负责"预计算 cos/sin 缓存表"。
+
+【YaRN / NTK / Linear scaling】
+长上下文扩展技术——把"训练长度"扩展到"推理长度"。本文件的 get_rope
+接受 rope_scaling 字典支持这些方案。
+
+【为什么 get_rope 用 functools.cache】
+相同参数的 RoPE 实例可以全模型共享一份 cos/sin 表，省显存。
+========================================================================
+"""
+
 from __future__ import annotations
 
 import functools

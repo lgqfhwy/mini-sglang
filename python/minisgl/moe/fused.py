@@ -1,3 +1,34 @@
+"""
+========================================================================
+文件名: moe/fused.py
+所属模块: MoE - Fused 后端实现
+========================================================================
+
+【这个文件做什么】
+封装 fused MoE kernel（来自 vllm/sgl-kernel）作为 mini-sglang 的 MoE 后端。
+
+【fused MoE 的核心思想】
+朴素实现:
+  for expert_i in experts:
+      tokens_i = tokens[选了 expert_i 的位置]
+      output_i = expert_i(tokens_i)
+      把 output_i 散回原位置
+这样每个 expert 一次 kernel 启动，N 个 expert 就 N 次。
+
+fused 实现:
+  把所有 expert 的权重打包成一个大 tensor [num_experts, ...]
+  一次 grouped GEMM 同时算所有 expert
+  减少 kernel launch overhead，提升小规模 batch 的吞吐。
+
+【依赖】
+- vllm 或 sgl-kernel 提供的 fused_experts kernel
+- 通过 router_logits 算 top-k 选择和权重
+
+【为什么 functools.lru_cache】
+缓存"router 配置 → kernel 启动参数"的映射——避免每次前向都重新算。
+========================================================================
+"""
+
 import functools
 from typing import Dict, Tuple
 

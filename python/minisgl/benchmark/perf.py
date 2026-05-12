@@ -1,3 +1,14 @@
+"""
+========================================================================
+文件名: benchmark/perf.py
+所属模块: Benchmark - 性能测试统计工具
+========================================================================
+
+封装 throughput / latency / tokens-per-second 等性能指标的计算。
+被 benchmark/offline/*.py 等离线测试脚本调用。
+========================================================================
+"""
+
 from __future__ import annotations
 
 from typing import Any, Callable, Dict, Tuple

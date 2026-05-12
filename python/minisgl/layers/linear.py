@@ -1,3 +1,32 @@
+"""
+========================================================================
+文件名: layers/linear.py
+所属模块: Layers - 线性层（含 TP 切分版本）
+========================================================================
+
+【这个文件提供的几种 Linear】
+
+- LinearReplicated:        权重在所有 TP rank 上都完整存一份（小矩阵用）
+- LinearColParallelMerged: 列切分（按输出维度切）；输入完整、输出切分
+                            合并多个 Linear（如 gate + up_proj 合成一个 fused linear）
+- LinearRowParallel:       行切分（按输入维度切）；输入切分、输出 all-reduce 汇总
+- LinearQKVMerged:         融合 q_proj + k_proj + v_proj 一次算完
+                            （列切分；注意 Q 和 KV 的 head 数可能不同）
+- LinearOProj:             attention 的输出投影（行切分）
+
+【TP 切分原理】
+矩阵乘 Y = X @ W：
+- 列切分: W 按列切成 [W1 | W2]，每卡算 Y_i = X @ W_i，然后 concat 拼起来
+- 行切分: W 按行切成 [W1; W2]，X 也对应切，各算 X_i @ W_i，最后 all-reduce 求和
+
+【典型用法（FFN）】
+gate_up_proj 用 ColParallel（前一半 gate，后一半 up，输出按列切）
+        ↓ silu_and_mul（每卡独立做）
+down_proj 用 RowParallel（输入是切片，输出需要 all-reduce）
+        ↓ 拿到全局结果
+========================================================================
+"""
+
 from __future__ import annotations
 
 from typing import List
