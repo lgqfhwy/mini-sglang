@@ -1,3 +1,34 @@
+"""
+========================================================================
+文件名: attention/fi.py
+所属模块: 注意力 - FlashInfer 后端
+========================================================================
+
+【这个文件是做什么的】
+封装 FlashInfer (https://github.com/flashinfer-ai/flashinfer) 作为 mini-sglang
+的注意力后端。FlashInfer 是专门为 LLM 推理优化的注意力 kernel 库，
+PagedAttention 支持非常好——decode 阶段（每请求 1 token）尤其高效。
+
+【为什么需要这个后端】
+PagedAttention（vLLM 论文）要求 KV cache 按"页"分散存储。FlashInfer 提供
+专门处理 paged KV 的 kernel，比 FlashAttention 在 decode 上快得多。
+
+【核心数据结构】
+- FICaptureData: CUDA Graph 用的固定张量（继承 BaseCaptureData）
+- FIMetadata: 每个 batch 的元数据
+- FlashInferBackend: 后端主类，内部持有 BatchPrefillWithPagedKVCacheWrapper
+  / BatchDecodeWithPagedKVCacheWrapper 两个 wrapper 分别用于 prefill 和 decode
+
+【prefill 和 decode 用不同的 wrapper】
+FlashInfer 把两种场景分开优化：
+- BatchPrefillWithPagedKVCacheWrapper: 变长 prefill
+- BatchDecodeWithPagedKVCacheWrapper:  固定每请求 1 个 token 的 decode
+
+【TP 支持】
+通过 get_tp_info 拿到当前 rank 的 KV head 数（num_kv_heads / TP_size）。
+========================================================================
+"""
+
 from __future__ import annotations
 
 import math

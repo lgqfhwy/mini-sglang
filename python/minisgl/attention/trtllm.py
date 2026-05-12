@@ -1,3 +1,30 @@
+"""
+========================================================================
+文件名: attention/trtllm.py
+所属模块: 注意力 - TensorRT-LLM 后端
+========================================================================
+
+【这个文件是做什么的 - 一句话总结】
+封装 NVIDIA TensorRT-LLM 的注意力 kernel 作为 mini-sglang 后端。这是
+NVIDIA 旗舰卡（B200 / Blackwell, SM100）上最快的注意力 kernel——能利用
+Blackwell 上专门的 attention 硬件单元（如 TMA、wgmma 等）。
+
+【为什么需要这个后端】
+- Blackwell 上 FA / FI 还没充分用到新硬件特性
+- TRT-LLM 由 NVIDIA 官方维护，每代新卡都会率先支持
+- 在合适场景下能比 FA 快 30%-50%
+
+【对 page_size 的要求】
+TRT-LLM kernel 内部要求 page_size ∈ {16, 32, 64}。所以引擎在自动配置
+时会把 page_size 改成 64（见 engine/engine.py 的 _adjust_config）。
+
+【核心数据结构】
+- TRTLLMCaptureData: CUDA Graph 录制用
+- TRTLLMMetadata: 前向元数据
+- TensorRTLLMBackend: 后端主类
+========================================================================
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

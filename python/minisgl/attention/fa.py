@@ -1,3 +1,37 @@
+"""
+========================================================================
+文件名: attention/fa.py
+所属模块: 注意力 - FlashAttention 后端
+========================================================================
+
+【这个文件是做什么的 - 一句话总结】
+封装 FlashAttention（FA2/FA3）作为 mini-sglang 的注意力后端。
+FlashAttention 是 Tri Dao 2022 论文里提出的"显存高效注意力" kernel，
+通过分块计算 + 在线 softmax 把 O(seq_len^2) 的显存降到 O(seq_len)，
+同时也比 PyTorch 原生快很多。本文件主要工作是把"Batch 元数据"翻译成
+FA kernel 能直接吃的张量格式。
+
+【为什么用 FlashAttention 做后端】
+- 变长序列友好：prefill 时每个请求长度都不同，FA 用 cu_seqlens 直接处理
+- 性能极佳：H100 上几乎打满 BF16 算力
+- 支持 paged KV：FA3 直接接受 page_table 输入，无需 gather
+
+【核心数据结构】
+- FACaptureData: CUDA Graph 录制用的固定张量（继承 BaseCaptureData）
+- FAMetadata: 每个 batch 算前向时的元数据（cu_seqlens_k/q、page_table 等）
+- FlashAttentionBackend: 后端主类，实现 prepare_metadata / forward 等
+
+【cu_seqlens 解释】
+"累积 seqlen 偏移"——对变长序列必备。
+例: 3 个请求长度 [5, 3, 7]
+    cu_seqlens = [0, 5, 8, 15]
+    含义: 第 i 个请求的 token 在拼接张量里的 slice [cu[i], cu[i+1])
+
+【SM100 / Blackwell 特别处理】
+某些 kernel 调用要根据 SM 版本切换 API（is_sm100_supported）。
+========================================================================
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
